@@ -46,7 +46,10 @@ def create_spacex_mission_directory(mission_name):
 
 
 def get_spacex_collection_directory():
-    return os.path.join(IMAGE_DIRECTORY_ROOT, SPACEX_DIRECTORY_NAME)
+    path = os.path.join(IMAGE_DIRECTORY_ROOT, SPACEX_DIRECTORY_NAME)
+    if os.path.exists(path):
+        return path
+    return None
 
 
 def create_hubble_collection_directory(hubble_collection_name):
@@ -65,4 +68,7 @@ def create_hubble_collection_directory(hubble_collection_name):
 
 
 def get_hubble_directory():
-    return os.path.join(IMAGE_DIRECTORY_ROOT, HUBBLE_DIRECTORY_NAME)
+    path = os.path.join(IMAGE_DIRECTORY_ROOT, HUBBLE_DIRECTORY_NAME)
+    if os.path.exists(path):
+        return path
+    return None
