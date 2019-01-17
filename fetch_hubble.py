@@ -2,10 +2,10 @@ from itertools import count
 
 import requests
 
-from common import (
+from utils.common import (
     load_image_to_directory,
     create_hubble_collection_directory,
-    build_image_name
+    build_full_image_name
 )
 
 
@@ -25,7 +25,7 @@ def load_imgs_files(collection_name, imgs_files_to_load, limit=None):
 
     for image in imgs_files_to_load[:limit]:
 
-        img_name = build_image_name(
+        img_name = build_full_image_name(
             image['img_id'], image['img_file_url'])
 
         saved_image_path = load_image_to_directory(
@@ -39,7 +39,10 @@ def load_imgs_files(collection_name, imgs_files_to_load, limit=None):
     return saved_images, ''
 
 
-def parse_image_response(response):
+def get_img_file_url(img_id):
+    image_url = f'http://hubblesite.org/api/v3/image/{img_id}'
+    response = requests.get(image_url)
+
     if not response.ok:
         return None
     try:
@@ -48,12 +51,14 @@ def parse_image_response(response):
         return None
 
     image_files_object = json_response.get('image_files', None)
+
     if image_files_object is None:
         return None
+
     return image_files_object[-1]['file_url']
 
 
-def get_images_files_urls(imgs_ids, limit=None):
+def get_imgs_urls_to_download(imgs_ids, limit=None):
     images = []
 
     if limit is None:
@@ -62,9 +67,8 @@ def get_images_files_urls(imgs_ids, limit=None):
         limit = min(len(imgs_ids), limit)
 
     for img_id in imgs_ids[:limit]:
-        image_url = f'http://hubblesite.org/api/v3/image/{img_id}'
-        response = requests.get(image_url)
-        image_file_url = parse_image_response(response)
+
+        image_file_url = get_img_file_url(img_id)
 
         if image_file_url is None:
             continue
@@ -77,7 +81,7 @@ def get_images_files_urls(imgs_ids, limit=None):
     return images
 
 
-def parse_images_collection_response(response):
+def parse_imgs_collection_response(response):
     if not response.ok:
         return None
     try:
@@ -87,7 +91,7 @@ def parse_images_collection_response(response):
     return [img_element['id'] for img_element in json_response]
 
 
-def get_images_ids_from_collection_pages(collection_name, page_limit=5):
+def get_imgs_ids_from_collection(collection_name, page_limit=5):
     hubble_images_collection_url = f'http://hubblesite.org/api/v3/images/{collection_name}'
     images_ids = []
     for i in count(1):
@@ -96,7 +100,7 @@ def get_images_ids_from_collection_pages(collection_name, page_limit=5):
             break
 
         response = requests.get(hubble_images_collection_url, params={'page': i})
-        images_ids_from_page = parse_images_collection_response(response)
+        images_ids_from_page = parse_imgs_collection_response(response)
 
         if not images_ids_from_page:
             break
@@ -107,19 +111,15 @@ def get_images_ids_from_collection_pages(collection_name, page_limit=5):
 
 
 def fetch_hubble_images_from_collection(collection_name):
-    images_per_collection_limit = None
-
-    imgs_ids = get_images_ids_from_collection_pages(
+    imgs_id = get_imgs_ids_from_collection(
         collection_name)
 
-    imgs_files_to_load = get_images_files_urls(
-        imgs_ids,
-        images_per_collection_limit)
+    imgs_urls_to_download = get_imgs_urls_to_download(
+        imgs_id)
 
     fetched_images, error = load_imgs_files(
         collection_name,
-        imgs_files_to_load,
-        images_per_collection_limit)
+        imgs_urls_to_download)
 
     return fetched_images, error
 

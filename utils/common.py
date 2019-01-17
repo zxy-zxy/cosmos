@@ -7,7 +7,7 @@ SPACEX_DIRECTORY_NAME = 'spacex'
 HUBBLE_DIRECTORY_NAME = 'hubble'
 
 
-def build_image_name(img_name, img_url):
+def build_full_image_name(img_name, img_url):
     img_url_without_extension, img_extension = os.path.splitext(img_url)
     return f'{img_name}{img_extension}'
 
@@ -45,6 +45,10 @@ def create_spacex_mission_directory(mission_name):
         return None, error_message
 
 
+def get_spacex_collection_directory():
+    return os.path.join(IMAGE_DIRECTORY_ROOT, SPACEX_DIRECTORY_NAME)
+
+
 def create_hubble_collection_directory(hubble_collection_name):
     try:
         dir_name = os.path.join(
@@ -58,3 +62,7 @@ def create_hubble_collection_directory(hubble_collection_name):
         error_message = 'Cannot create directory {}. Error occured: {}'
         error_message = error_message.format(dir_name, e)
         return None, error_message
+
+
+def get_hubble_directory():
+    return os.path.join(IMAGE_DIRECTORY_ROOT, HUBBLE_DIRECTORY_NAME)

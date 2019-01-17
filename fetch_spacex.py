@@ -1,14 +1,15 @@
-import requests
 import sys
 
-from common import (
+import requests
+
+from utils.common import (
     create_spacex_mission_directory,
     load_image_to_directory,
-    build_image_name,
+    build_full_image_name,
 )
 
 
-def get_spacex_last_launch_required_data():
+def get_spacex_last_mission_required_data():
     spacex_url = 'https://api.spacexdata.com/v3/launches/latest'
     response = requests.get(spacex_url)
     try:
@@ -42,8 +43,8 @@ def get_spacex_last_launch_required_data():
     return required_data, ''
 
 
-def fetch_spacex_last_launch_images():
-    spacex_data, error_message = get_spacex_last_launch_required_data()
+def fetch_spacex_last_mission_images():
+    spacex_data, error_message = get_spacex_last_mission_required_data()
 
     if spacex_data is None:
         return None, error_message
@@ -59,7 +60,7 @@ def fetch_spacex_last_launch_images():
     res = []
 
     for index, img_url in enumerate(images_urls):
-        image_name = build_image_name(index + 1, img_url)
+        image_name = build_full_image_name(index + 1, img_url)
 
         saved_image_path = load_image_to_directory(
             current_mission_directory,
@@ -73,7 +74,7 @@ def fetch_spacex_last_launch_images():
 
 
 if __name__ == '__main__':
-    saved_images, error_message = fetch_spacex_last_launch_images()
+    saved_images, error_message = fetch_spacex_last_mission_images()
     if saved_images is None:
         sys.exit(error_message)
     print('Here saved images: {}'.format(saved_images))
