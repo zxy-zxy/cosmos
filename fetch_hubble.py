@@ -125,9 +125,9 @@ def fetch_hubble_images_from_collection(collection_name, collection_dir_name):
 def get_available_collections():
     return [
         'holiday_cards',
-        # 'wallpaper',
-        # 'printshop',
-        # 'stsci_gallery',
+        'wallpaper',
+        'printshop',
+        'stsci_gallery',
     ]
 
 
