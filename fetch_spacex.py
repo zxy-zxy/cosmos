@@ -92,7 +92,7 @@ if __name__ == '__main__':
         )
         create_directory(mission_dir_name)
     except OSError as e:
-        sys.exit(f'Cannot created directory: {dir_name}. Error occured: {e}')
+        sys.exit(f'Cannot created directory: {mission_dir_name}. Error occured: {e}')
 
     saved_images = fetch_spacex_last_mission_images(
         mission_dir_name,
