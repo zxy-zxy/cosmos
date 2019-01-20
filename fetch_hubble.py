@@ -1,42 +1,39 @@
+import os
 from itertools import count
 
 import requests
 
 from utils.common import (
+    IMAGE_DIRECTORY_ROOT,
+    HUBBLE_DIRECTORY_NAME,
     load_image_to_directory,
-    create_hubble_collection_directory,
+    create_directory,
     build_full_image_name
 )
 
 
-def load_imgs_files(collection_name, imgs_files_to_load, limit=None):
-    hubble_collection_img_dir, error_message = create_hubble_collection_directory(
-        collection_name)
-
-    if hubble_collection_img_dir is None:
-        return None, error_message
-
+def load_imgs_files(dir_name, imgs_files_to_load, limit=None):
     saved_images = []
 
-    if limit is None:
-        limit = len(imgs_files_to_load)
-    else:
-        limit = min(len(imgs_files_to_load), limit)
+    if limit is not None:
+        imgs_files_to_load = imgs_files_to_load[:limit]
 
-    for image in imgs_files_to_load[:limit]:
+    for image in imgs_files_to_load:
 
         img_name = build_full_image_name(
-            image['img_id'], image['img_file_url'])
+            image['img_id'], image['img_file_url']
+        )
 
         saved_image_path = load_image_to_directory(
-            hubble_collection_img_dir,
+            dir_name,
             img_name,
-            image['img_file_url'])
+            image['img_file_url']
+        )
 
         if saved_image_path:
             saved_images.append(saved_image_path)
 
-    return saved_images, ''
+    return saved_images
 
 
 def get_img_file_url(img_id):
@@ -61,12 +58,10 @@ def get_img_file_url(img_id):
 def get_imgs_urls_to_download(imgs_ids, limit=None):
     images = []
 
-    if limit is None:
-        limit = len(imgs_ids)
-    else:
-        limit = min(len(imgs_ids), limit)
+    if limit is not None:
+        imgs_ids = imgs_ids[:limit]
 
-    for img_id in imgs_ids[:limit]:
+    for img_id in imgs_ids:
 
         image_file_url = get_img_file_url(img_id)
 
@@ -92,7 +87,8 @@ def parse_imgs_collection_response(response):
 
 
 def get_imgs_ids_from_collection(collection_name, page_limit=5):
-    hubble_images_collection_url = f'http://hubblesite.org/api/v3/images/{collection_name}'
+    hubble_images_collection_url = f'http://hubblesite.org/api/' \
+                                   f'v3/images/{collection_name}'
     images_ids = []
     for i in count(1):
 
@@ -110,42 +106,57 @@ def get_imgs_ids_from_collection(collection_name, page_limit=5):
     return images_ids
 
 
-def fetch_hubble_images_from_collection(collection_name):
+def fetch_hubble_images_from_collection(collection_name, collection_dir_name):
     imgs_id = get_imgs_ids_from_collection(
-        collection_name)
+        collection_name,
+    )
 
     imgs_urls_to_download = get_imgs_urls_to_download(
         imgs_id)
 
-    fetched_images, error = load_imgs_files(
-        collection_name,
-        imgs_urls_to_download)
+    fetched_images = load_imgs_files(
+        collection_dir_name,
+        imgs_urls_to_download,
+    )
 
-    return fetched_images, error
+    return fetched_images
 
 
 def get_available_collections():
     return [
         'holiday_cards',
-        'wallpaper',
-        'printshop',
-        'stsci_gallery',
+        # 'wallpaper',
+        # 'printshop',
+        # 'stsci_gallery',
     ]
 
 
 def fetch_hubble_images():
     available_collections = get_available_collections()
     for collection_name in available_collections:
-        saved_images, error = fetch_hubble_images_from_collection(collection_name)
-        yield (saved_images, error)
+
+        try:
+            collection_dir_name = os.path.join(
+                IMAGE_DIRECTORY_ROOT,
+                HUBBLE_DIRECTORY_NAME,
+                collection_name
+            )
+            create_directory(collection_dir_name)
+        except OSError as e:
+            print(f'Cannot created directory: {collection_name}. '
+                  f'Error occured: {e}')
+            continue
+
+        saved_images = fetch_hubble_images_from_collection(
+            collection_name, collection_dir_name
+        )
+
+        yield saved_images
 
 
 if __name__ == '__main__':
     fetched_hubble_images = fetch_hubble_images()
-    for saved_images, error in fetched_hubble_images:
-        if error:
-            print(f'Error has occured: {error}')
-        else:
-            print('Here saved images: ')
-            for saved_image in saved_images:
-                print(saved_image)
+    for saved_images in fetched_hubble_images:
+        print('Here saved images: ')
+        for saved_image in saved_images:
+            print(saved_image)

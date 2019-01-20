@@ -5,8 +5,9 @@ from dotenv import load_dotenv
 from instabot import Bot
 
 from utils.common import (
-    get_hubble_directory,
-    get_spacex_collection_directory
+    IMAGE_DIRECTORY_ROOT,
+    SPACEX_DIRECTORY_NAME,
+    HUBBLE_DIRECTORY_NAME
 )
 from utils.img_processing import fix_photo
 
@@ -36,26 +37,24 @@ if __name__ == '__main__':
     bot = create_bot_instance()
     if bot is None:
         sys.exit('''
-        Cannot log-in with provided credentials. 
+        Cannot log-in with provided credentials.
         Check instagram_login and instagram_password env variables.
         ''')
 
-    spacex_directory = get_spacex_collection_directory()
-    if spacex_directory is None:
+    spacex_directory = os.path.join(IMAGE_DIRECTORY_ROOT, SPACEX_DIRECTORY_NAME)
+    if not os.path.isdir(spacex_directory):
         print('''
         Spacex directory is not launched yet.
         Try to run fetch_spacex.py to get some new images!
         ''')
     else:
-        post_photos_from_directory(
-            spacex_directory, bot)
+        post_photos_from_directory(spacex_directory, bot)
 
-    hubble_directory = get_hubble_directory()
-    if hubble_directory is None:
+    hubble_directory = os.path.join(IMAGE_DIRECTORY_ROOT, HUBBLE_DIRECTORY_NAME)
+    if not os.path.isdir(hubble_directory):
         print('''
-        Hubble directory is not found. 
+        Hubble directory is not found.
         Try to run fetch_hubble.py to get some photo's from hubble telescope!
         ''')
     else:
-        post_photos_from_directory(
-            hubble_directory, bot)
+        post_photos_from_directory(hubble_directory, bot)

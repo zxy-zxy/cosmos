@@ -1,10 +1,16 @@
-import os
+"""
+This module resizes the image ratio so it that can be uploaded to instagram.
+This code is taken from https://github.com/basnijholt/instacron.
+"""
 
+import os
 import tempfile
 
 import numpy as np
 from instabot.api.api_photo import compatible_aspect_ratio, get_image_size
 from PIL import Image
+
+from scipy.optimize import minimize_scalar
 
 
 def fix_photo(img_filename):
@@ -31,7 +37,6 @@ def strip_exif(img):
 
 
 def get_highest_entropy(img, min_ratio=4 / 5, max_ratio=90 / 47):
-    from scipy.optimize import minimize_scalar
     w, h = img.size
     data = np.array(img)
     ratio = w / h
