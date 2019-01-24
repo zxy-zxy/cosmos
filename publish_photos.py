@@ -13,7 +13,6 @@ from utils.img_processing import fix_photo
 
 
 def create_bot_instance():
-    load_dotenv()
     instagram_login = os.getenv('instagram_login')
     instagram_password = os.getenv('instagram_password')
     bot = Bot()
@@ -34,7 +33,10 @@ def post_photos_from_directory(directory, bot: Bot):
 
 
 if __name__ == '__main__':
+    load_dotenv()
+
     bot = create_bot_instance()
+
     if bot is None:
         sys.exit('''
         Cannot log-in with provided credentials.
